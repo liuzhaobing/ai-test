@@ -1,0 +1,7 @@
+name: worker
+
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/

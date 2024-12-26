@@ -1,0 +1,25 @@
+{
+  "title": "shishen_agent",
+  "parent": "shishen",
+  "method": "POST",
+  "url": "https://cookery-test.myroki.com/api/llm/chat/kb/sse",
+  "first_line": 3000,
+  "all_line": 10000,
+  "request_headers": {
+    "Content-Type": "application/json; charset=utf-8",
+    "Authorization": "Bearer 0O3XjOOhrGgzwIayypn0KD9XA79ym4bO"
+  },
+  "request_payload": {
+    "traceId": "TRACEID",
+    "debug": true,
+    "consumerId": "1847186349225783296",
+    "query": "QUESTION",
+    "fileIds": [],
+    "sessionId": "",
+    "clientKey": "5"
+  },
+  "test_case_file": "datasets/chat/shishen_v1.1.jsonl",
+  "jsonpath_expression": [
+    "$.question"
+  ]
+}
