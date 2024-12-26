@@ -3,6 +3,7 @@ services:
   worker:
     container_name: ai-test
     build:
+      context: .
       dockerfile: Dockerfile
     volumes:
       - ${PROJECT_DIR}:/code
