@@ -5,7 +5,7 @@ services:
     build:
       dockerfile: Dockerfile
     volumes:
-      - `pwd`:/code
+      - ${PROJECT_DIR}:/code
     ports:
       - "8888:8888"
       - "8889:8889"
