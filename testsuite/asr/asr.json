@@ -1,0 +1,21 @@
+{
+  "title": "asr_control",
+  "parent": "asr",
+  "method": "grpc",
+  "url": "harix-skill-asr.wispirit.raysengine.com",
+  "first_line": 1000,
+  "all_line": 10000,
+  "request_payload": {
+    "agent_id": 2259,
+    "language": "CH",
+    "dialect": "zh",
+    "vendor": "CloudMinds",
+    "audio_file": "QUESTION",
+    "trace_id": "TRACEID"
+  },
+  "test_case_file": "dataset/asr/asr.jsonl",
+  "jsonpath_expression": [
+    "dataset/asr/wav/",
+    "$.wav_file"
+  ]
+}

@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package skill.asr;
+
+import "google/protobuf/struct.proto";
+option go_package = "v1/asr";
+
+service Speech {
+  rpc Recognize (RecognitionRequest) returns (RecognitionResponse) {}
+  rpc StreamingRecognize (stream RecognitionRequest) returns (stream RecognitionResponse) {}
+  rpc DoCheck (CheckCmd) returns (CheckCmd) {}
+  rpc TextRecognize (TextRecognizeRequest) returns (TextRecognizeResponse) {}
+}
+
+message Body {
+  enum Type {
+    BLOCK = 0;
+    STREAMING = 1;
+  }
+  Type type = 9; // may need different definition to detect BLOCK or STREAMING
+  string sid = 10;
+  string app_type = 11;
+  string tag = 12;
+  int32 stream_flag = 13;
+  map<string, string> option = 14; // keys contains recognizedText=something, will not call vendor platform and use something as asr result
+  // keys contains recognizeOnly=anything, will not call service app any more
+  // keys contains returnDetail=anything, will return a more key named "detailMessage" in the return value
+  Data data = 15;
+  message Data {
+    int32 rate = 1; // means sampling-rate always 16000
+    string format = 2;  // only pcm
+    string account = 3; // user id
+    string language = 4; // CH EN TCH JA ES
+    string dialect = 5; // when vendor=Google then "https://cloud.google.com/speech-to-text/docs/languages" for column "languageCode"
+    // when vendor=Baidu then "http://ai.baidu.com/docs#/ASR-Online-Java-SDK/top" for section "dev_pid 参数列表"
+    // when vendor=IFlyTek then "https://doc.xfyun.cn/rest_api/%E8%AF%AD%E9%9F%B3%E5%90%AC%E5%86%99.html" for section "6.1.2. 业务参数" "engine_type"
+    string vendor = 6;  // Google Baidu IFlyTek
+    int32 channel = 7;
+    int32 duration = 8;
+    int32 flag = 9;
+    bytes speech = 10 [json_name = "-"];
+    AsrsLang mulAsrLang = 11;//asrs lang set,over 0 is meanning
+  }
+  bool need_wakeup = 16; // true: need to wake up; false: needn't wake up
+}
+
+message RecognitionRequest {
+  CommonReqInfo common_req_info = 1;
+  Body body = 2;
+  Extra extra = 3;
+  string version = 4; // 空：兼容之前版本； v1.5 ：多模态第一版协议
+}
+
+message RecognitionResponse {
+  CommonRspInfo common_rsp_info = 1;
+  google.protobuf.Struct detail_message = 2;
+  bool is_noise = 3;  // true if asr result is empty
+  string question_id = 4; // audio url format by date_questionId.wav
+  bool is_wakeup = 5; // true: wakeup success ; false: needn't wakup or wake up fail
+  WakeupStatus wakeup_status = 6;
+}
+
+enum WakeupStatus {
+  NO_WAKEUP = 0;// 代表未唤醒，
+  WAKEUP_SUCCESS = 1;// 代表唤醒成功
+  HAD_WAKEUP = 2;// 已唤醒
+  ONESHOT = 3;//oneshot混合唤醒
+}
+
+message CheckCmd {
+  string action = 1;
+  int32 status = 2;//0 cpu start,1 cpu end
+  string cmdDsc = 3;//return dsc
+}
+
+enum AsrsLang {
+  LANG_KEEP = 0;
+  LANG_CH = 1;//china
+  LANG_EN = 2;//english
+  LANG_SICHUAN = 3;//sichuan hua
+  LANG_YUEYU = 4; //yue yu
+}
+message TextRecognizeRequest{
+  CommonReqInfo common_req_info = 1;
+  TextRecognizeBody body = 2;
+  Extra extra = 3;
+  string version = 4; // 空：兼容之前版本； v1.5 ：多模态第一版协议
+}
+
+message TextRecognizeBody{
+  string app_type = 1;//哪个系统请求的asrctrl
+  string txt = 2;//请求的文本
+  string language = 3; // CH EN TCH JA ES
+  string dialect = 4;//方言
+}
+
+message TextRecognizeResponse{
+  int32 code = 1;//0：成功 其他：失败
+  string msg = 2;//失败原因
+}
+
+message CommonReqInfo {
+  string guid = 1;
+  int64 timestamp = 2;
+  string version = 3;
+  string tenant_id = 4;
+  string user_id = 5;
+  string robot_id = 6;
+  string robot_type = 7;
+  string service_code = 8;
+  string seq = 9;
+  string root_guid = 10;
+}
+
+message CommonRspInfo {
+  int32 err_code = 1;
+  string err_msg = 2;
+  string err_detail = 3;
+}
+
+message Extra {
+  string extra_type = 1;
+  string extra_body = 2;
+}

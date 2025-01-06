@@ -1,0 +1,33 @@
+{
+  "title": "bank_qa",
+  "parent": "talk",
+  "method": "grpc",
+  "url": "172.16.23.85:30811",
+  "first_line": 1000,
+  "all_line": 10000,
+  "request_payload": {
+    "agent_id": 1809,
+    "session_id": "SESSIONID",
+    "question_id": "TRACEID",
+    "event_type": 0,
+    "env_info": {
+      "devicetype": "ginger"
+    },
+    "robot_id": "5C1AEC03573747D",
+    "tenant_code": "cloudminds",
+    "position": "104.061,30.5444",
+    "version": "v3",
+    "inputContext": "",
+    "is_full": true,
+    "is_ha": false,
+    "test_mode": false,
+    "asr": {
+      "lang": "CH",
+      "text": "QUESTION"
+    }
+  },
+  "test_case_file": "datasets/qa/qa_bank.jsonl",
+  "jsonpath_expression": [
+    "$.question"
+  ]
+}
