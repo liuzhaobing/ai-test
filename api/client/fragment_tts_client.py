@@ -13,6 +13,65 @@ from api.proto.tts import fragment_tts_pb2, fragment_tts_pb2_grpc
 from main import LOG_DIR
 
 
+def get_common_req_info(
+        version: str = "3.2.1",
+        tenant_id: str = "cloud_pepper",
+        user_id: str = "3038",
+        robot_id: str = "862851030073038",
+        robot_type: str = "pepper",
+        service_code: str = "ginger",
+        trace_id: str = uuid.uuid4().hex,
+):
+    return fragment_tts_pb2.CommonReqInfo(
+        guid=trace_id[:16],
+        timestamp=int(time.time() * 1000),
+        version=version,
+        tenant_id=tenant_id,
+        user_id=user_id,
+        robot_id=robot_id,
+        robot_type=robot_type,
+        service_code=service_code,
+        root_guid=trace_id,
+    )
+
+
+def tts_request(
+        text: str = "今天天气真不错",
+        vendor: t.Literal["CloudMinds", "Ali"] = "CloudMinds",
+        trace_id: str = uuid.uuid4().hex,
+        **kwargs,
+):
+    try:
+        if vendor == "Ali":
+            return fragment_tts_pb2.FragmentTTSRequest(
+                common_req_info=get_common_req_info(trace_id=trace_id),
+                body=fragment_tts_pb2.FragmentTTSRequest.Body(
+                    text=text,
+                    vendor="Ali",
+                    speaker="jielidou",
+                    volume="50",
+                ),
+            )
+        elif vendor == "CloudMinds":
+            return fragment_tts_pb2.FragmentTTSRequest(
+                common_req_info=get_common_req_info(trace_id=trace_id),
+                body=fragment_tts_pb2.FragmentTTSRequest.Body(
+                    text=text,
+                    vendor="CloudMinds",
+                    language="zh",
+                    speaker="DaXiaoQing",
+                    rate="16000",
+                    pitch="medium",
+                    volume="3",
+                    speed="2",
+                ),
+            )
+        return None
+    except Exception as e:
+        logging.error(f"make {__name__} error: {e}")
+        return None
+
+
 class StreamingSpeechSynthesizeGRPC(GRPC):
     stub_class = fragment_tts_pb2_grpc.FragmentTextToSpeechStub
 
@@ -26,69 +85,11 @@ class StreamingSpeechSynthesizeGRPC(GRPC):
             wf.setframerate(sample_rate)
             wf.writeframes(pcm_data)
 
-    def get_common_req_info(
-            self,
-            version: str = "3.2.1",
-            tenant_id: str = "cloud_pepper",
-            user_id: str = "3038",
-            robot_id: str = "862851030073038",
-            robot_type: str = "pepper",
-            service_code: str = "ginger",
-    ):
-        root_guid = uuid.uuid4().hex
-        return fragment_tts_pb2.CommonReqInfo(
-            guid=root_guid[:16],
-            timestamp=int(time.time() * 1000),
-            version=version,
-            tenant_id=tenant_id,
-            user_id=user_id,
-            robot_id=robot_id,
-            robot_type=robot_type,
-            service_code=service_code,
-            root_guid=root_guid,
-        )
-
-    def tts_request(
-            self,
-            text: str = "今天天气真不错",
-            vendor: t.Literal["CloudMinds", "Ali"] = "CloudMinds",
-            **kwargs,
-    ):
-        try:
-            if vendor == "Ali":
-                return fragment_tts_pb2.FragmentTTSRequest(
-                    common_req_info=self.get_common_req_info(),
-                    body=fragment_tts_pb2.FragmentTTSRequest.Body(
-                        text=text,
-                        vendor="Ali",
-                        speaker="jielidou",
-                        volume="50",
-                    ),
-                )
-            elif vendor == "CloudMinds":
-                return fragment_tts_pb2.FragmentTTSRequest(
-                    common_req_info=self.get_common_req_info(),
-                    body=fragment_tts_pb2.FragmentTTSRequest.Body(
-                        text=text,
-                        vendor="CloudMinds",
-                        language="zh",
-                        speaker="DaXiaoQing",
-                        rate="16000",
-                        pitch="medium",
-                        volume="3",
-                        speed="2",
-                    ),
-                )
-            return None
-        except Exception as e:
-            logging.error(f"make {__name__} error: {e}")
-            return None
-
     def call(self, *args, **kwargs):
         filename = kwargs.get("filename")
         if not filename:
             raise ValueError("please input a filename to be saved as .wav")
-        req = self.tts_request(*args, **kwargs)
+        req = tts_request(*args, **kwargs)
         logging.info(json_format.MessageToDict(req))
         try:
             responses = self.stub.StreamingSpeechSynthesize(req)

@@ -1,0 +1,17 @@
+{
+  "title": "tts_ali",
+  "parent": "tts",
+  "method": "grpc",
+  "url": "harix-skill-tts.wispirit.raysengine.com:9443",
+  "first_line": 1000,
+  "all_line": 10000,
+  "request_payload": {
+    "vendor": "Ali",
+    "text": "QUESTION",
+    "trace_id": "TRACEID"
+  },
+  "test_case_file": "dataset/tts/tts.jsonl",
+  "jsonpath_expression": [
+    "$.answer"
+  ]
+}

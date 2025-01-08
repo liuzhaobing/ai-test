@@ -2,7 +2,7 @@
   "title": "asr_control",
   "parent": "asr",
   "method": "grpc",
-  "url": "harix-skill-asr.wispirit.raysengine.com",
+  "url": "harix-skill-asr.wispirit.raysengine.com:9443",
   "first_line": 1000,
   "all_line": 10000,
   "request_payload": {
