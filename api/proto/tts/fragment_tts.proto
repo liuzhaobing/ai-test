@@ -1,0 +1,268 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.cloudminds.harix.skill.tts.grpc";
+option java_outer_classname = "FragmentTTSProtos";
+option objc_class_prefix = "FragmentTTS";
+import "google/protobuf/struct.proto";
+
+package skill.tts;
+
+service FragmentTextToSpeech {
+  rpc SpeechSynthesize (FragmentTTSRequest) returns (FragmentTTSResponse) {
+    option deprecated = true; // 不再保证接口可用，建议使用流式多模态接口
+  }
+
+  // 当对接达闼TTS时，建议使用流式多模态接口
+  rpc StreamingSpeechSynthesize (FragmentTTSRequest) returns (stream FragmentResponse) {
+  }
+
+  rpc SupportInfo (SupportInfoRequest) returns (SupportInfoResponse) {
+  }
+
+  // 仅支持达闼TTS流式多模态合成
+  rpc StreamingMultiModalSynthesize (MultiModalRequest) returns (stream MultiModalResponse) {
+  }
+}
+
+message CommonReqInfo {
+  string guid = 1;
+  int64 timestamp = 2;
+  string version = 3;
+  string tenant_id = 4;
+  string user_id = 5;
+  string robot_id = 6;
+  string robot_type = 7;
+  string service_code = 8;
+  string seq = 9;
+  string root_guid = 10;
+}
+
+message CommonRspInfo {
+  int32 err_code = 1;
+  string err_msg = 2;
+  string err_detail = 3;
+}
+
+message FragmentTTSRequest {
+  CommonReqInfo common_req_info = 1;
+  Body body = 2;
+  string emotion = 3;
+
+  message Body {
+    string text = 1; //文本
+    string vendor = 2; //第三方厂商
+    string language = 3; //语言    谷歌(language_code),百度(lan),微软(lang),自研(lang)
+    string gender = 4; //性别      谷歌(ssml_gender),自研(gender)
+    string speaker = 5; //发音人   谷歌(voice_name),百度(per),微软(name),自研(speaker)
+    string rate = 6; //采样率
+    string pitch = 7; //音调
+    string volume = 8; //音量
+
+    map<string, string> option = 9; // keys contains testText recognizeOnly returnDetail
+
+    string speed = 10; //语速
+    AudioEncoding audio_encoding = 11;
+  }
+}
+
+enum AudioType {
+  MP3 = 0;
+  WAV = 1;
+  PCM = 2;
+}
+
+enum AudioEncoding {
+  LINEAR16 = 0;
+  OPUS = 1;
+  MP_3 = 2;
+}
+
+message FragmentTTSResponse {
+  CommonRspInfo common_rsp_info = 1;
+  Body body = 2;
+  message Body {
+    AudioType audio_type = 1;
+    repeated SpeechContent speech_content = 2;
+    message SpeechContent {
+      string text = 1; //根据传递的多个text
+      string url = 2; //根据语句返回多个url
+      int32 after_delay = 3; //语句中可能会会使用到的delay
+    }
+  }
+  int64 delay = 3;
+  google.protobuf.Struct detail_message = 4;
+}
+
+message FragmentResponse {
+  CommonRspInfo common_rsp_info = 1;
+  Body body = 2;
+  message Body {
+    AudioType audio_type = 1[deprecated = true];
+    string text = 2; // 本段音频对应的文字
+    bytes speech = 3; // 音频流
+    int32 length = 4; // 音频流长度
+    repeated TimedMouthShape mouth_shapes = 5;
+    Expression expression = 6;
+  }
+  google.protobuf.Struct detail_message = 4;
+
+  message TimedMouthShape {
+    uint64 durationUs = 1; // 时间
+    uint64 timeUs = 2; // 时间
+    int32 mouth = 3; // 嘴型 enum MouthShape
+  }
+
+  message Expression {
+    repeated float data = 1;  //具体的表情数据, frame_size*frame_dim
+    int32 frame_size = 2;   //表情帧数
+    int32 frame_dim = 3;    //一帧的维度，即多少个float
+    float frame_time = 4;   //一帧的持续时间
+  }
+}
+
+message MultiModalRequest {
+  CommonReqInfo common_req_info = 1;
+  Body body = 2;
+  string emotion = 3;
+  string digital_person = 4[deprecated = true];
+  map<string, string> multi_modal_params = 5;
+
+  message Body {
+    string text = 1; //文本
+    string vendor = 2; //第三方厂商
+    string language = 3; //语言    谷歌(language_code),百度(lan),微软(lang),自研(lang)
+    string gender = 4; //性别      谷歌(ssml_gender),自研(gender)
+    string speaker = 5; //发音人   谷歌(voice_name),百度(per),微软(name),自研(speaker)
+    string rate = 6; //采样率
+    string pitch = 7; //音调
+    string volume = 8; //音量
+
+    map<string, string> option = 9; // keys contains testText recognizeOnly returnDetail
+
+    string speed = 10; //语速
+    AudioEncoding audio_encoding = 11; //  LINEAR16 = 0, OPUS = 1,
+  }
+}
+
+message MultiModalResponse{
+  CommonRspInfo common_rsp_info = 1;
+  int32 status = 2; //合成状态1.开始，2.中间。3，结束
+  google.protobuf.Struct detail_message = 3;
+
+  oneof result_oneof {
+    SynthesizedAudio synthesized_audio = 4; //音频
+    DebugInfo debug_info = 5; //调试信息,当有debug_info时需要输出
+    ActionElement action_element = 6; //基元数据
+    ConfigAndText config_text = 7; //文本配置信息start时会返回
+    TimedMouthShapes time_mouth_shapes = 8; //口型数据
+    Expression expression = 9; //表情数据
+    BodyMovement body_movement = 10; //动作数据
+    CoordinateMapping coordinate_mapping = 11; // 坐标数据映射关系
+    AudioData audio_data = 12; // 编码后的音频数据
+  }
+
+  //Action基元数据
+  message ActionElement {
+    int32 action_type = 1; //actionType   基元类型，-100<action_type<100
+    string url = 2; //         基元数据的url
+    int32 operation_type = 3; // action操作类型，-100<operation_type<100
+    Coordinate coordinate = 4; // 该数据的坐标信息
+    int32 render_duration = 5; //render_duration 渲染时长（该值不应大于文件时长），单位ms，-1代表持续到指定文件结束，-2代表由coordinate的len_utf8部分决定时长
+  }
+  //调试信息
+  message DebugInfo {
+    string debug_type = 1;
+    string info = 2;
+  }
+
+  //音频流
+  message ConfigAndText {
+    string text = 1; //文本信息
+    FacialExpressionConfig facial_expression_config = 2; //表情配置
+    BodyMovementConfig body_movement_config = 3; //动作配置
+    AudioConfig audio_config = 4;
+  }
+
+  message FacialExpressionConfig {
+    int32 frame_dim = 1; //每帧的维度，即一帧由frameDim个float组成
+    float frame_dur_ms = 2; //每帧的持续时长
+    string meta_data = 3; // 伴生数据的其他描述性信息(json)
+  }
+
+  message BodyMovementConfig {
+    int32 frame_dim = 1; //每帧的维度，即一帧由frameDim个float组成
+    float frame_dur_ms = 2; //每帧的持续时长
+    string meta_data = 3; // 伴生数据的其他描述性信息(json)
+  }
+
+  message AudioConfig {
+    int32 sampling_rate = 1; // 采样率，16000Hz
+    int32 channels = 2; // 通道数, 1--mono
+    AudioEncoding audio_encoding = 3; // 音频编码, 参考enum AudioEncoding
+  }
+
+  //音频流
+  message SynthesizedAudio {
+    bytes pcm = 1; //pcm
+    Coordinate coordinate = 2; //坐标信息
+    int32 is_punctuation = 3; //是否标点1是标点
+  }
+
+  message AudioData{
+    bytes audio = 1; // audio data
+  }
+
+  message TimeCoordinate {
+    int32 start_time = 1; // 音频开始时间
+    int32 duration = 2; // 音频持续时间
+  }
+
+  message CoordinateMapping{
+    Coordinate coordinate = 1; // 文本坐标信息
+    TimeCoordinate time_coordinate = 2; // 时间坐标信息
+  }
+
+  //口型
+  message TimedMouthShapes {
+    repeated TimedMouthShape mouths = 1; //口型数据
+    float start_time_ms = 2; //该段口型的起始时间，单位ms
+  }
+
+  message TimedMouthShape {
+    uint64 duration_us = 1; // 时间
+    int32 mouth = 2; // 嘴型 enum MouthShape
+  }
+
+  //坐标信息
+  message Coordinate {
+    int32 off = 1; // 文本起点
+    int32 len = 2; //文本长度
+    // 当len_utf8&eq;0时，与off_utf8一起描述一个的时间点。具体地，当off_utf8相同时，order相同则认为同时，order不同时，0优先，1次之，依次类推
+    // 当len_utf8&gt;0时，order无意义
+    int32 order = 3;
+  }
+
+  //表情
+  message Expression {
+    repeated float data = 1; //具体的表情数据, frame_size*frame_dim,frame_dim见FacialExpressionConfig
+    int32 frame_size = 2; //表情帧数
+    float start_time_ms = 3; //起始时间，单位ms
+  }
+
+  message BodyMovement {
+    repeated float data = 1; //具体动作数据，frame_dim*frame_size个float,frame_dim见BodyMovementConfig
+    int32 frame_size = 2; //动作帧数
+    float start_time_ms = 3; //起始时间，单位ms
+  }
+}
+
+message SupportInfoRequest {
+  CommonReqInfo common_req_info = 1;
+  map<string, string> params = 2; // such as vendor
+}
+
+message SupportInfoResponse {
+  CommonRspInfo common_rsp_info = 1;
+  map<string, string> configs = 2; // version ed.
+}
