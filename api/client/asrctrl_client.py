@@ -100,7 +100,7 @@ class StreamingRecognizeGRPC(GRPC):
 
 
 if __name__ == '__main__':
-    speech = StreamingRecognizeGRPC(address="harix-skill-asr.wispirit.raysengine.com")
+    speech = StreamingRecognizeGRPC(address="harix-skill-asr.wispirit.raysengine.com:9443", insecure=False)
     speech_result = speech(
         agent_id=2732,
         language="CH",

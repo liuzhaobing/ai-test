@@ -16,6 +16,7 @@ from api.client.asrctrl_client import asrctrl_pb2_grpc, streaming_send_request
 class StreamASRControlGrpcUser(GRPCUser):
     interceptor = StreamStreamGrpcInterceptor
     stub_class = asrctrl_pb2_grpc.SpeechStub
+    insecure = False
 
     @task
     def grpc_stream_task(self):

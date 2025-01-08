@@ -29,15 +29,19 @@ def time_strf_now():
 class GRPC(abc.ABC):
     stub_class = None
 
-    def __init__(self, address: str):
+    def __init__(self, address: str, insecure: bool = True):
         if not self.stub_class:
             raise ValueError(f"invalid stub class: [{self.stub_class}]")
         self.address = address
+        options = [
+            ('grpc.max_send_message_length', 100 * 1024 * 1024),
+            ('grpc.max_receive_message_length', 100 * 1024 * 1024),
+        ]
         try:
-            self.channel = grpc.insecure_channel(address, options=[
-                ('grpc.max_send_message_length', 100 * 1024 * 1024),
-                ('grpc.max_receive_message_length', 100 * 1024 * 1024),
-            ])
+            if insecure:
+                self.channel = grpc.insecure_channel(address, options=options)
+            else:
+                self.channel = grpc.secure_channel(address, credentials=grpc.ssl_channel_credentials(), options=options)
             self.stub = self.stub_class(self.channel)
             logging.info(f"dial grpc address success: {address}")
         except Exception as e:

@@ -16,6 +16,7 @@ from api.client.interceptor_client import StreamStreamGrpcInterceptor
 class StreamTalkGrpcUser(GRPCUser):
     interceptor = StreamStreamGrpcInterceptor
     stub_class = talk_pb2_grpc.TalkStub
+    insecure = False
 
     @task
     def grpc_stream_task(self):

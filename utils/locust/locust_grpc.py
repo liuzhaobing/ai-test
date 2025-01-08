@@ -35,5 +35,9 @@ class GRPCUser(ParseUser):
         if not check_grpc_url(self.host):
             raise LocustError("You must specify a valid gRPC host. E.g. 127.0.0.1:50051")
 
-        self._channel = grpc.intercept_channel(grpc.insecure_channel(self.host), self.interceptor())
+        if self.insecure:
+            channel = grpc.insecure_channel(self.host)
+        else:
+            channel = grpc.secure_channel(self.host, grpc.ssl_channel_credentials())
+        self._channel = grpc.intercept_channel(channel, self.interceptor())
         self.stub = self.stub_class(self._channel)

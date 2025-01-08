@@ -85,6 +85,6 @@ class TtsGRPC(GRPC):
 
 
 if __name__ == '__main__':
-    tts_client = TtsGRPC(address="harix-skill-tts.wispirit.raysengine.com")
+    tts_client = TtsGRPC(address="harix-skill-tts.wispirit.raysengine.com:9443", insecure=False)
     res = tts_client(text="电话号码：+86 8888 8888", filename=os.path.join(LOG_DIR, "a.wav"))
     print(res)

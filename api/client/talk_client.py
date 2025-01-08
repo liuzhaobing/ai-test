@@ -76,8 +76,8 @@ class StreamTalkGRPC(TalkGRPC):
 
 
 if __name__ == '__main__':
-    talk = TalkGRPC(address="sv-grpc.wispirit.raysengine.com")
-    talk_result = talk(text="现在几点了", agent_id=666)
+    talk = TalkGRPC(address="sv-grpc.wispirit.raysengine.com:9443", insecure=False)
+    talk_result = talk(text="现在几点了", agent_id=1, robot_id="80000000000050")
 
-    stream_talk = StreamTalkGRPC(address="sv-grpc.wispirit.raysengine.com")
-    stream_talk_result = stream_talk(text="介绍一下马斯克", agent_id=1740)
+    stream_talk = StreamTalkGRPC(address="sv-grpc.wispirit.raysengine.com:9443", insecure=False)
+    stream_talk_result = stream_talk(text="介绍一下马斯克", agent_id=1, robot_id="80000000000050")
