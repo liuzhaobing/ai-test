@@ -52,30 +52,34 @@ class StreamingSpeechSynthesizeGRPC(GRPC):
             self,
             text: str = "今天天气真不错",
             vendor: t.Literal["CloudMinds", "Ali"] = "CloudMinds",
-            language: t.Literal["zh", "en"] = "zh",
-            speaker: t.Literal["DaXiaoQing"] = "DaXiaoQing",
-            rate: str = "16000",
-            pitch: str = "medium",
-            volume: str = "3",
-            speed: str = "2",
-            option: dict = {},
             **kwargs,
     ):
         try:
-            return fragment_tts_pb2.FragmentTTSRequest(
-                common_req_info=self.get_common_req_info(),
-                body=fragment_tts_pb2.FragmentTTSRequest.Body(
-                    text=text,
-                    vendor=vendor,
-                    language=language,
-                    speaker=speaker,
-                    rate=rate,
-                    pitch=pitch,
-                    volume=volume,
-                    option=option,
-                    speed=speed,
-                ),
-            )
+            if vendor == "Ali":
+                return fragment_tts_pb2.FragmentTTSRequest(
+                    common_req_info=self.get_common_req_info(),
+                    body=fragment_tts_pb2.FragmentTTSRequest.Body(
+                        text=text,
+                        vendor="Ali",
+                        speaker="jielidou",
+                        volume="50",
+                    ),
+                )
+            elif vendor == "CloudMinds":
+                return fragment_tts_pb2.FragmentTTSRequest(
+                    common_req_info=self.get_common_req_info(),
+                    body=fragment_tts_pb2.FragmentTTSRequest.Body(
+                        text=text,
+                        vendor="CloudMinds",
+                        language="zh",
+                        speaker="DaXiaoQing",
+                        rate="16000",
+                        pitch="medium",
+                        volume="3",
+                        speed="2",
+                    ),
+                )
+            return None
         except Exception as e:
             logging.error(f"make {__name__} error: {e}")
             return None
@@ -106,5 +110,5 @@ class StreamingSpeechSynthesizeGRPC(GRPC):
 
 if __name__ == '__main__':
     tts_client = StreamingSpeechSynthesizeGRPC(address="harix-skill-tts.wispirit.raysengine.com:9443", insecure=False)
-    res = tts_client(text="电话号码：+86 8888 8888", filename=os.path.join(LOG_DIR, "a.wav"))
+    res = tts_client(vendor="Ali", text="电话号码：+86 8888 8888", filename=os.path.join(LOG_DIR, "a.wav"))
     print(res)
