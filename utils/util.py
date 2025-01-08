@@ -105,7 +105,7 @@ def save_data_to_xlsx(data: list[dict], filename: str, **kwargs):
 
 
 def check_grpc_url(address: str) -> bool:
-    pattern = re.compile(r"^(\d{1,3}\.){3}\d{1,3}\:\d{1,5}$")
+    pattern = re.compile(r"^(?:(?:\d{1,3}\.){3}\d{1,3}|[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+):\d{1,5}$")
     return True if pattern.match(address) else False
 
 

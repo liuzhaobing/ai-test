@@ -5,6 +5,7 @@
 # Created: 2024/7/11
 # Last Modified: 2024/7/11
 # -*- coding:utf-8 -*-
+import logging
 import json
 import os
 import queue
@@ -45,6 +46,7 @@ class ParseUser(User):
         self.record_first_chunk_model = self.environment.parsed_options.record_first_chunk_model
         if not self.record_first and not self.record_first_chunk and not self.record_first_chunk_model:
             self.record_first = True
+        self.record_all = False
 
         with open(os.path.join(BASE_PATH, self.test_config), "r") as f:
             self.config = json.load(f)
@@ -79,6 +81,9 @@ class ParseUser(User):
 
         self.questions = queue.Queue()
         for test_case in _test_cases:
+            with open("aaa.txt", "a") as f:
+                f.write(generate_query(test_case, self.jsonpath_expression))
+                f.write("\n")
             self.questions.put(generate_query(test_case, self.jsonpath_expression))
 
         _user_count = self.environment.runner.user_count

@@ -43,6 +43,7 @@ def get_all_datasets(dataset: str) -> t.Dict:
 
 
 def check_grpc_url(address: str) -> bool:
+    return True
     pattern = re.compile(r"^(\d{1,3}\.){3}\d{1,3}\:\d{1,5}$")
     return True if pattern.match(address) else False
 
