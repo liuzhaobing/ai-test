@@ -41,3 +41,6 @@ class GRPCUser(ParseUser):
             channel = grpc.secure_channel(self.host, grpc.ssl_channel_credentials())
         self._channel = grpc.intercept_channel(channel, self.interceptor())
         self.stub = self.stub_class(self._channel)
+
+    def __del__(self):
+        self._channel.close()
