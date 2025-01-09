@@ -4,12 +4,15 @@ import logging
 import math
 import os.path
 import time
+import threading
 
 from google.protobuf import json_format
 from api.client.client import GRPC
 from api.proto.asrctrl import asrctrl_pb2_grpc, asrctrl_pb2
 import utils.util as util
 from main import BASE_DIR
+
+lock = threading.Lock()
 
 
 def recognition_request(
@@ -69,20 +72,21 @@ def streaming_send_request(
         *args,
         **kwargs
 ):
-    with open(audio_file, "rb") as f:
-        if audio_file.endswith(".wav"):
-            f.read(44)
-        cnt = 0
-        stream_flag = 0
-        while True:
-            data = f.read(buffer_size)
-            if not data:
-                break
-            if cnt == 40:
-                stream_flag = 2
-                time.sleep(0.2)
-            yield recognition_request(audio_bytes=data, stream_flag=stream_flag, *args, **kwargs)
-            cnt += 1
+    with lock:
+        with open(audio_file, "rb") as f:
+            if audio_file.endswith(".wav"):
+                f.read(44)
+            cnt = 0
+            stream_flag = 0
+            while True:
+                data = f.read(buffer_size)
+                if not data:
+                    break
+                if cnt == 40:
+                    stream_flag = 2
+                    time.sleep(0.2)
+                yield recognition_request(audio_bytes=data, stream_flag=stream_flag, *args, **kwargs)
+                cnt += 1
 
 
 class StreamingRecognizeGRPC(GRPC):

@@ -4,6 +4,8 @@
 # Author: zhaobing.liu@outlook.com
 # Created: 2024/7/11
 # Last Modified: 2024/7/11
+import logging
+
 import grpc
 import grpc.experimental.gevent as grpc_gevent
 from locust.exception import LocustError
@@ -41,6 +43,12 @@ class GRPCUser(ParseUser):
             channel = grpc.secure_channel(self.host, grpc.ssl_channel_credentials())
         self._channel = grpc.intercept_channel(channel, self.interceptor())
         self.stub = self.stub_class(self._channel)
+        logging.info(f"gRPC channel created: {self.host}")
 
     def __del__(self):
-        self._channel.close()
+        if self._channel is not None:
+            try:
+                self._channel.close()
+                logging.info(f"close grpc channel: {self.host}")
+            except Exception as e:
+                logging.warning(f"close grpc channel failed: {e}")
