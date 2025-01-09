@@ -22,7 +22,7 @@ from locust import events
 from locust.exception import LocustError
 
 from utils.data import load_data_from_xlsx, get_jsonl, generate_job_instance_id, check_http_url
-from api import BASE_PATH, LOG_PATH
+from main import BASE_DIR, LOG_DIR
 
 
 @events.init_command_line_parser.add_listener
@@ -48,7 +48,7 @@ class ParseUser(User):
             self.record_first = True
         self.record_all = False
 
-        with open(os.path.join(BASE_PATH, self.test_config), "r") as f:
+        with open(os.path.join(BASE_DIR, self.test_config), "r") as f:
             self.config = json.load(f)
 
         self.title = self.config.get("title", "grpc_stream")
@@ -65,7 +65,7 @@ class ParseUser(User):
         _test_cases = self.config.get("test_case_list", [])
 
         if not _test_cases:
-            self.test_case_file = os.path.join(BASE_PATH, self.test_case_file)
+            self.test_case_file = os.path.join(BASE_DIR, self.test_case_file)
 
             if self.test_case_file.endswith(".jsonl"):
                 _test_cases = get_jsonl(self.test_case_file)
@@ -89,7 +89,7 @@ class ParseUser(User):
         _user_count = self.environment.runner.user_count
         _today = dt.now().strftime("%Y%m%d")
         self.session_id = f"LOCUST.{generate_job_instance_id()}.{self.parent}.{self.title}.{_user_count + 1}"
-        self.report = os.path.join(LOG_PATH, "locust", self.parent, self.title, _today, f"{self.session_id}.jsonl")
+        self.report = os.path.join(LOG_DIR, "locust", self.parent, self.title, _today, f"{self.session_id}.jsonl")
         Path(self.report).parent.mkdir(parents=True, exist_ok=True)
 
 

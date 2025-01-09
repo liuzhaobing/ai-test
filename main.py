@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 import os.path
 import logging.config
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 BASE_DIR = os.path.dirname(__file__)
 LOG_DIR = os.path.join(BASE_DIR, "runtime", "logs")
