@@ -81,9 +81,6 @@ class ParseUser(User):
 
         self.questions = queue.Queue()
         for test_case in _test_cases:
-            with open("aaa.txt", "a") as f:
-                f.write(generate_query(test_case, self.jsonpath_expression))
-                f.write("\n")
             self.questions.put(generate_query(test_case, self.jsonpath_expression))
 
         _user_count = self.environment.runner.user_count

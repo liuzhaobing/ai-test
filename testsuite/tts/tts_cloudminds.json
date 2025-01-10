@@ -12,6 +12,6 @@
   },
   "test_case_file": "dataset/tts/tts.jsonl",
   "jsonpath_expression": [
-    "$.answer"
+    "$.text"
   ]
 }

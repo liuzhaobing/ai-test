@@ -16,6 +16,6 @@
   "test_case_file": "dataset/asr/asr.jsonl",
   "jsonpath_expression": [
     "dataset/asr/wav/",
-    "$.filename"
+    "$.audioName"
   ]
 }
