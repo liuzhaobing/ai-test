@@ -44,7 +44,7 @@ class StreamingSpeechSynthesizeGrpcUser(GRPCUser):
         _question = self.question if self.question else question
         replace_str(payload, "QUESTION", _question)
         replace_str(payload, "TRACEID", trace_id)
-        if payload.get("vendor") == "CloudMinds":
+        if payload.get("vendor") == "Ali":
             speaker_enum = SPEAKER_ALI_ENUM
             pitch_enum = PITCH_ALI_ENUM
             volume_enum = VOLUME_ALI_ENUM
@@ -69,7 +69,19 @@ class StreamingSpeechSynthesizeGrpcUser(GRPCUser):
                 costs.append(cost)
                 start_perf_counter = this_time
 
-        if self.record_first:
+        if not costs:
+            self.environment.events.request.fire(
+                request_type=self.method,
+                start_time=start_time,
+                response=responses_json,
+                response_length=len(responses_json),
+                exception=Exception(f"none of costs"),
+                context=None,
+                name=f"/{self.parent}/{self.title}/none",
+                response_time=0,
+            )
+
+        if self.record_first and costs:
             self.environment.events.request.fire(
                 request_type=self.method,
                 start_time=start_time,
@@ -81,7 +93,7 @@ class StreamingSpeechSynthesizeGrpcUser(GRPCUser):
                 response_time=costs[0],
             )
 
-        if self.record_all:
+        if self.record_all and costs:
             self.environment.events.request.fire(
                 request_type=self.method,
                 start_time=start_time,

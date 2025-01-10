@@ -39,7 +39,7 @@ class StreamASRControlGrpcUser(GRPCUser):
             response_json = json_format.MessageToDict(response)
             responses_json.append(response_json)
 
-        if self.record_first:
+        if self.record_first and costs:
             self.environment.events.request.fire(
                 request_type=self.method,
                 start_time=start_time,
@@ -51,7 +51,7 @@ class StreamASRControlGrpcUser(GRPCUser):
                 response_time=costs[0],
             )
 
-        if self.record_all:
+        if self.record_all and costs:
             self.environment.events.request.fire(
                 request_type=self.method,
                 start_time=start_time,
