@@ -62,25 +62,25 @@ class ParseUser(User):
         self.jsonpath_expression = self.config.get("jsonpath_expression", [])
         self.test_case_file = self.config.get("test_case_file", "")
 
-        _test_cases = self.config.get("test_case_list", [])
+        self.cases_from_file = self.config.get("test_case_list", [])
 
-        if not _test_cases:
+        if not self.cases_from_file:
             self.test_case_file = os.path.join(BASE_DIR, self.test_case_file)
 
             if self.test_case_file.endswith(".jsonl"):
-                _test_cases = get_jsonl(self.test_case_file)
+                self.cases_from_file = get_jsonl(self.test_case_file)
             elif self.test_case_file.endswith(".xlsx"):
-                _test_cases = load_data_from_xlsx(self.test_case_file, self.config.get("sheet_name", "Sheet1"))
+                self.cases_from_file = load_data_from_xlsx(self.test_case_file, self.config.get("sheet_name", "Sheet1"))
             else:
-                _test_cases = []
+                self.cases_from_file = []
 
         self.test_cases = queue.Queue()
-        random.shuffle(_test_cases)
-        for test_case in _test_cases:
+        random.shuffle(self.cases_from_file)
+        for test_case in self.cases_from_file:
             self.test_cases.put(test_case)
 
         self.questions = queue.Queue()
-        for test_case in _test_cases:
+        for test_case in self.cases_from_file:
             self.questions.put(generate_query(test_case, self.jsonpath_expression))
 
         _user_count = self.environment.runner.user_count

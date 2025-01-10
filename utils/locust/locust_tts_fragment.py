@@ -8,13 +8,32 @@ from locust import task
 from utils.locust.locust_base import *
 from utils.locust.locust_grpc import GRPCUser
 from api.client.interceptor_client import UnaryStreamGrpcInterceptor
-from api.client.fragment_tts_client import fragment_tts_pb2_grpc, tts_request
+from api.client.fragment_tts_client import (
+    fragment_tts_pb2_grpc,
+    tts_request,
+    SPEAKER_ALI_ENUM,
+    PITCH_ALI_ENUM,
+    VOLUME_ALI_ENUM,
+    SPEED_ALI_ENUM,
+    SPEAKER_CLOUDMINDS_ENUM,
+    PITCH_CLOUDMINDS_ENUM,
+    VOLUME_CLOUDMINDS_ENUM,
+    SPEED_CLOUDMINDS_ENUM,
+)
 
 
 class StreamingSpeechSynthesizeGrpcUser(GRPCUser):
     interceptor = UnaryStreamGrpcInterceptor
     stub_class = fragment_tts_pb2_grpc.FragmentTextToSpeechStub
     insecure = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.questions = queue.Queue()
+        for test_case in self.cases_from_file:
+            text = generate_query(test_case, self.jsonpath_expression)
+            self.questions.put(text)
 
     @task
     def grpc_stream_task(self):
@@ -25,6 +44,20 @@ class StreamingSpeechSynthesizeGrpcUser(GRPCUser):
         _question = self.question if self.question else question
         replace_str(payload, "QUESTION", _question)
         replace_str(payload, "TRACEID", trace_id)
+        if payload.get("vendor") == "CloudMinds":
+            speaker_enum = SPEAKER_ALI_ENUM
+            pitch_enum = PITCH_ALI_ENUM
+            volume_enum = VOLUME_ALI_ENUM
+            speed_enum = SPEED_ALI_ENUM
+        else:
+            speaker_enum = SPEAKER_CLOUDMINDS_ENUM
+            pitch_enum = PITCH_CLOUDMINDS_ENUM
+            volume_enum = VOLUME_CLOUDMINDS_ENUM
+            speed_enum = SPEED_CLOUDMINDS_ENUM
+        replace_str(payload, "SPEAKER", random.choice(speaker_enum))
+        replace_str(payload, "SPEED", random.choice(speed_enum))
+        replace_str(payload, "VOLUME", random.choice(volume_enum))
+        replace_str(payload, "PITCH", random.choice(pitch_enum))
 
         start_time, costs, responses_json, start_perf_counter = time.time(), [], [], time.perf_counter()
         responses = self.stub.StreamingSpeechSynthesize(tts_request(**payload))

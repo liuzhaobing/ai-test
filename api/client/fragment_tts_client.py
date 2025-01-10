@@ -12,6 +12,25 @@ from api.client.client import GRPC
 from api.proto.tts import fragment_tts_pb2, fragment_tts_pb2_grpc
 from main import LOG_DIR
 
+SPEAKER_ALI_ENUM = [
+    "zhixiaobai", "jielidou", "zhiyue", "zhichu", "xiaoyun", "ruoxi", "aimei", "aiya", "aiyu", "chuangirl", "guijie",
+    "Stella", "maoxiaomei", "zhishuo", "abin", "xiaogang", "dahu", "stanley", "kenny", "aishuo"
+]
+PITCH_ALI_ENUM = [str(i) for i in range(-500, 501)]
+VOLUME_ALI_ENUM = [str(i) for i in range(0, 101)]
+SPEED_ALI_ENUM = [str(i) for i in range(-500, 501)]
+
+SPEAKER_CLOUDMINDS_ENUM = [
+    "DaXiaoFang", "DaXiaoQi", "DaDaQiang", "DaDaGang", "DaTongTong", "DaMingMing", "DaXiaoChuan", "DaXiaoYue",
+    "DaXiaoYing", "DaXiaoBei", "DaXiaoTai", "DaDaXiang", "DaXiaoHu", "DaXiaoWu", "DaSiWan", "DaXiaoQing", "DaJunJie",
+    "DaSiYi", "DaYiJian", "DaYiXi", "DaSiXia", "DaXiaoTong", "DaYiMo", "DaYiQiao", "DaYiXing", "DaYiYa", "DaSiMo",
+    "DaSiYuan", "DaYiHui", "DaSiHui", "DaYiLun", "DaSiRu", "DaSiRou", "DaSiYue", "DaYiWei", "DaSiXian", "DaSiMei",
+    "DaSiYu", "DaYiMin", "DaXiaoBao", "DoctorZhao", "DaSiLan", "DaSiYun", "DaSiYan"
+]
+PITCH_CLOUDMINDS_ENUM = ["medium", "low", "high"]
+VOLUME_CLOUDMINDS_ENUM = ["1", "2", "3", "4", "5"]
+SPEED_CLOUDMINDS_ENUM = ["1", "2", "3", "4", "5"]
+
 
 def get_common_req_info(
         version: str = "3.2.1",
@@ -48,8 +67,10 @@ def tts_request(
                 body=fragment_tts_pb2.FragmentTTSRequest.Body(
                     text=text,
                     vendor="Ali",
-                    speaker="jielidou",
-                    volume="50",
+                    speaker=kwargs.get("speaker", "jielidou"),
+                    volume=kwargs.get("volume", "50"),
+                    pitch=kwargs.get("pitch", "50"),
+                    speed=kwargs.get("speed", "50"),
                 ),
             )
         elif vendor == "CloudMinds":
@@ -59,11 +80,11 @@ def tts_request(
                     text=text,
                     vendor="CloudMinds",
                     language="zh",
-                    speaker="DaXiaoQing",
+                    speaker=kwargs.get("speaker", "DaXiaoQing"),
                     rate="16000",
-                    pitch="medium",
-                    volume="3",
-                    speed="2",
+                    pitch=kwargs.get("pitch", "medium"),
+                    volume=kwargs.get("volume", "3"),
+                    speed=kwargs.get("speed", "2"),
                 ),
             )
         return None
