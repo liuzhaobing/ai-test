@@ -42,7 +42,7 @@ class StreamTalkGrpcUser(GRPCUser):
             responses_json.append(response_json)
 
         sources = jsonpath.jsonpath(responses_json, "$..source")
-        answers = jsonpath.jsonpath(data, "$..tts..text")
+        answers = jsonpath.jsonpath(responses_json, "$..tts..text")
 
         self.environment.events.request.fire(
             request_type="Receive",

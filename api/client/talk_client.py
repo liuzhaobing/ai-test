@@ -2,6 +2,7 @@
 import json
 import logging
 
+import jsonpath
 from google.protobuf import json_format
 from api.client.client import GRPC
 from api.proto.svpb import talk_pb2, talk_pb2_grpc
@@ -76,8 +77,9 @@ class StreamTalkGRPC(TalkGRPC):
 
 
 if __name__ == '__main__':
-    talk = TalkGRPC(address="sv-grpc.wispirit.raysengine.com:9443", insecure=False)
-    talk_result = talk(text="现在几点了", agent_id=1, robot_id="80000000000050")
-
     stream_talk = StreamTalkGRPC(address="sv-grpc.wispirit.raysengine.com:9443", insecure=False)
     stream_talk_result = stream_talk(text="介绍一下马斯克", agent_id=1, robot_id="80000000000050")
+    sources = jsonpath.jsonpath(stream_talk_result, "$..source")
+    answers = jsonpath.jsonpath(stream_talk_result, "$..tts..text")
+    print(sources)
+    print(answers)
